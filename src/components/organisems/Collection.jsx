@@ -14,10 +14,8 @@ export default function Collection() {
     filterProductsByCategory,
   } = useProductStore();
 
-  // Local state for category filter
   const [activeCategory, setActiveCategory] = useState("all");
 
-  // Categories for filtering
   const categories = [
     { id: "all", name: "Semua Kelas" },
     { id: "pemasaran", name: "Pemasaran" },
@@ -26,20 +24,17 @@ export default function Collection() {
     { id: "bisnis", name: "Bisnis" },
   ];
 
-  // Fetch products on component mount
   useEffect(() => {
     if (products.length === 0) {
       fetchProducts();
     }
   }, [fetchProducts, products.length]);
 
-  // Get filtered products based on active category
   const filteredProducts =
     activeCategory === "all"
       ? products
       : filterProductsByCategory(activeCategory);
 
-  // Handle category change
   const handleCategoryChange = (categoryId) => {
     setActiveCategory(categoryId);
   };
@@ -55,7 +50,6 @@ export default function Collection() {
             Jelajahi Dunia Pengetahuan Melalui Pilihan Kami!
           </p>
 
-          {/* Category Filter */}
           <div className="flex justify-start space-x-7 mb-12 overflow-x-auto whitespace-nowrap">
             {categories.map((category) => (
               <button
@@ -72,7 +66,6 @@ export default function Collection() {
             ))}
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
               <span className="block sm:inline">{error}</span>
@@ -85,7 +78,6 @@ export default function Collection() {
             </div>
           )}
 
-          {/* Loading State */}
           {loading && (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
@@ -93,7 +85,6 @@ export default function Collection() {
             </div>
           )}
 
-          {/* Products Grid */}
           {!loading && (
             <>
               {filteredProducts.length > 0 ? (
@@ -130,7 +121,6 @@ export default function Collection() {
                 </div>
               )}
 
-              {/* Show All Button */}
               {filteredProducts.length > 0 && (
                 <div className="mt-12 text-center">
                   <a

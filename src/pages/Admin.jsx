@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import useProductStore from "../zustand/store";
 
 export default function Admin() {
-  // Zustand store
   const {
     products,
     loading,
@@ -17,32 +16,26 @@ export default function Admin() {
     clearError,
   } = useProductStore();
 
-  // Local state for form and search
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ title: "", price: "", subtitle: "" });
   const [editingId, setEditingId] = useState(null);
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Clear error when component unmounts or when needed
   useEffect(() => {
     return () => clearError();
   }, [clearError]);
 
-  // Handle input form
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Handle search input
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
 
-  // Add or update product
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,7 +55,6 @@ export default function Admin() {
     }
   };
 
-  // Delete product
   const handleDelete = async (id) => {
     if (confirm("Yakin ingin menghapus?")) {
       const result = await deleteProduct(id);
@@ -74,7 +66,6 @@ export default function Admin() {
     }
   };
 
-  // Edit product
   const handleEdit = (product) => {
     setForm({
       title: product.title,
@@ -84,7 +75,6 @@ export default function Admin() {
     setEditingId(product.id);
   };
 
-  // Get filtered products
   const filteredProducts = search ? searchProducts(search) : products;
 
   return (
@@ -103,7 +93,6 @@ export default function Admin() {
             </h1>
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               <span className="block sm:inline">{error}</span>
@@ -116,7 +105,6 @@ export default function Admin() {
             </div>
           )}
 
-          {/* Loading Indicator */}
           {loading && (
             <div className="text-center py-4">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -124,7 +112,6 @@ export default function Admin() {
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="mb-6">
             <input
               type="text"
@@ -168,7 +155,6 @@ export default function Admin() {
             </button>
           </form>
 
-          {/* Search Input */}
           <input
             type="text"
             placeholder="Cari produk..."
@@ -178,7 +164,6 @@ export default function Admin() {
             disabled={loading}
           />
 
-          {/* Daftar Produk */}
           <ul className="space-y-4">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
