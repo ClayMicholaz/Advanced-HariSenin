@@ -1,142 +1,224 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import HomeLayouts from '../layouts/HomeLayouts'
+import HomeLayouts from "../layouts/HomeLayouts";
 import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_API_URL + "/products";
+import useProductStore from "../zustand/store";
 
 export default function Admin() {
+  // Zustand store
+  const {
+    products,
+    loading,
+    error,
+    fetchProducts,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    searchProducts,
+    clearError,
+  } = useProductStore();
 
-    const [products, setProducts] = useState([]);
-    const [search, setSearch] = useState("");
-    const [form, setForm] = useState({ title: "", price: "", subtitle: "" });
-    const [editingId, setEditingId] = useState(null);
+  // Local state for form and search
+  const [search, setSearch] = useState("");
+  const [form, setForm] = useState({ title: "", price: "", subtitle: "" });
+  const [editingId, setEditingId] = useState(null);
 
-    // Fetch data
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
-    const fetchProducts = async () => {
-        try {
-            const { data } = await axios.get(API_URL);
-            setProducts(data);
-        } catch (error) {
-            console.error("Error fetching products:", error);
-        }
-    };
+  // Clear error when component unmounts or when needed
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
-    // Handle input form
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  // Handle input form
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-    // Handle search input
-    const handleSearch = (e) => {
-        setSearch(e.target.value);
-    };
+  // Handle search input
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+  };
 
-    // Add or update product
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (editingId) {
-                await axios.put(`${API_URL}/${editingId}`, form);
-                alert("Produk berhasil diperbarui!");
-            } else {
-                await axios.post(API_URL, form);
-                alert("Produk berhasil ditambahkan!");
-            }
-            fetchProducts();
-            setForm({ title: "", price: "", subtitle: "" });
-            setEditingId(null);
-        } catch (error) {
-            console.error("Error saving product:", error);
-        }
-    };
+  // Add or update product
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // Delete product
-    const handleDelete = async (id) => {
-        if (confirm("Yakin ingin menghapus?")) {
-            await axios.delete(`${API_URL}/${id}`);
-            fetchProducts();
-        }
-    };
+    let result;
+    if (editingId) {
+      result = await updateProduct(editingId, form);
+    } else {
+      result = await addProduct(form);
+    }
 
-    // Edit product
-    const handleEdit = (product) => {
-        setForm({ 
-            title: product.title, 
-            price: product.price, 
-            subtitle: product.subtitle 
-        });
-        setEditingId(product.id);
-    };
+    if (result.success) {
+      alert(result.message);
+      setForm({ title: "", price: "", subtitle: "" });
+      setEditingId(null);
+    } else {
+      alert(result.message);
+    }
+  };
 
-    // Filter produk berdasarkan pencarian
-    const filteredProducts = products.filter((product) =>
-        product.title.toLowerCase().includes(search.toLowerCase())
-    );
+  // Delete product
+  const handleDelete = async (id) => {
+    if (confirm("Yakin ingin menghapus?")) {
+      const result = await deleteProduct(id);
+      if (result.success) {
+        alert(result.message);
+      } else {
+        alert(result.message);
+      }
+    }
+  };
 
-    return (
-        <>
-            <HomeLayouts>
-                <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md mb-10">
-                    <div className="flex items-center mb-4">
-                        <Link to={`/`} className="bg-gray-300 px-3 py-1 rounded-md mr-4 hover:bg-gray-400">
-                            {`<`}
-                        </Link>
-                        <h1 className="text-2xl font-bold text-center flex-grow">Admin Produk</h1>
-                    </div>
+  // Edit product
+  const handleEdit = (product) => {
+    setForm({
+      title: product.title,
+      price: product.price,
+      subtitle: product.subtitle,
+    });
+    setEditingId(product.id);
+  };
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="mb-6">
-                        <input type="text" name="title" value={form.title} onChange={handleChange} placeholder="Judul Produk"
-                            className="w-full p-2 border rounded-md mb-2" required />
-                        <input type="text" name="subtitle" value={form.subtitle} onChange={handleChange} placeholder="Subjudul"
-                            className="w-full p-2 border rounded-md mb-2" />
-                        <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Harga"
-                            className="w-full p-2 border rounded-md mb-2" required />
-                        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                            {editingId ? "Update Produk" : "Tambah Produk"}
-                        </button>
-                    </form>
+  // Get filtered products
+  const filteredProducts = search ? searchProducts(search) : products;
 
-                    {/* Search Input */}
-                    <input
-                        type="text"
-                        placeholder="Cari produk..."
-                        value={search}
-                        onChange={handleSearch}
-                        className="w-full p-2 border rounded-md mb-4"
-                    />
+  return (
+    <>
+      <HomeLayouts>
+        <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md mb-10">
+          <div className="flex items-center mb-4">
+            <Link
+              to={`/`}
+              className="bg-gray-300 px-3 py-1 rounded-md mr-4 hover:bg-gray-400"
+            >
+              {`<`}
+            </Link>
+            <h1 className="text-2xl font-bold text-center flex-grow">
+              Admin Produk
+            </h1>
+          </div>
 
-                    {/* Daftar Produk */}
-                    <ul className="space-y-4">
-                        {filteredProducts.length > 0 ? (
-                            filteredProducts.map((product) => (
-                                <li key={product.id} className="p-4 border rounded-md flex justify-between items-center">
-                                    <div>
-                                        <h2 className="font-semibold">{product.title}</h2>
-                                        <p className="text-sm text-gray-600">{product.subtitle}</p>
-                                        <p className="font-bold text-green-500">Rp{product.price}</p>
-                                    </div>
-                                    <div className="space-x-2">
-                                        <button onClick={() => handleEdit(product)} className="px-3 py-1 bg-yellow-500 text-white rounded-md">
-                                            Edit
-                                        </button>
-                                        <button onClick={() => handleDelete(product.id)} className="px-3 py-1 bg-red-500 text-white rounded-md">
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </li>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-500">Produk tidak ditemukan.</p>
-                        )}
-                    </ul>
-                </div>
-            </HomeLayouts>
-        </>
-    )
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <span className="block sm:inline">{error}</span>
+              <button
+                onClick={clearError}
+                className="float-right text-red-700 hover:text-red-900"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="text-center py-4">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="ml-2">Loading...</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="mb-6">
+            <input
+              type="text"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Judul Produk"
+              className="w-full p-2 border rounded-md mb-2"
+              required
+              disabled={loading}
+            />
+            <input
+              type="text"
+              name="subtitle"
+              value={form.subtitle}
+              onChange={handleChange}
+              placeholder="Subjudul"
+              className="w-full p-2 border rounded-md mb-2"
+              disabled={loading}
+            />
+            <input
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="Harga"
+              className="w-full p-2 border rounded-md mb-2"
+              required
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+              disabled={loading}
+            >
+              {loading
+                ? "Processing..."
+                : editingId
+                ? "Update Produk"
+                : "Tambah Produk"}
+            </button>
+          </form>
+
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Cari produk..."
+            value={search}
+            onChange={handleSearch}
+            className="w-full p-2 border rounded-md mb-4"
+            disabled={loading}
+          />
+
+          {/* Daftar Produk */}
+          <ul className="space-y-4">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <li
+                  key={product.id}
+                  className="p-4 border rounded-md flex justify-between items-center"
+                >
+                  <div>
+                    <h2 className="font-semibold">{product.title}</h2>
+                    <p className="text-sm text-gray-600">{product.subtitle}</p>
+                    <p className="font-bold text-green-500">
+                      Rp{product.price}
+                    </p>
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 disabled:bg-yellow-300"
+                      disabled={loading}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:bg-red-300"
+                      disabled={loading}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">
+                {search ? "Produk tidak ditemukan." : "Belum ada produk."}
+              </p>
+            )}
+          </ul>
+        </div>
+      </HomeLayouts>
+    </>
+  );
 }
