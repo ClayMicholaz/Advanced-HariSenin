@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL + "/products";
+const API_URL = import.meta.env.VITE_API_URL + "/courses";
 
 const useProductStore = create((set, get) => ({
   // State
