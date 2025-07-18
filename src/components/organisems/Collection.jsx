@@ -93,18 +93,20 @@ export default function Collection() {
                     <Card
                       key={product.id}
                       id={product.id}
-                      title={product.title}
-                      subtitle={product.subtitle}
+                      title={product.judul}
+                      subtitle={product.subjudul}
                       avatar={
-                        product.title
-                          ? `https://robohash.org/${product.title}.png?set=set2`
+                        product.profile_pengajar
+                          ? `/${product.profile_pengajar}`
                           : defaultAvatar
                       }
-                      mentor={product.mentor}
-                      rolementor={product.rolementor}
-                      price={product.price ? `Rp${product.price}` : "Gratis"}
+                      mentor={product.pengajar}
+                      rolementor={product.pekerjaan_pengajar}
+                      price={product.harga ? `Rp${product.harga}` : "Gratis"}
                       photos={
-                        product.photos || "https://via.placeholder.com/300"
+                        product.photos
+                          ? `/${product.photos}`
+                          : "https://via.placeholder.com/300"
                       }
                     />
                   ))}

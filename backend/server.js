@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const productRoutes = require("./routes/courses");
+const coursesRoutes = require("./routes/courses");
 app.use("/courses", coursesRoutes);
 
 // Run server
