@@ -5,7 +5,16 @@ const db = require("../db");
 router.get("/", (req, res) => {
   db.query("SELECT * FROM products", (err, results) => {
     if (err) return res.status(500).json({ error: err });
-    res.json(results);
+
+    // Mapping agar frontend bisa baca
+    const mapped = results.map((product) => ({
+      id: product.id,
+      title: product.name || product.title || "",
+      subtitle: product.description || product.subtitle || "",
+      price: product.price || product.harga || 0,
+    }));
+
+    res.json(mapped);
   });
 });
 
