@@ -2,6 +2,35 @@ import React from "react";
 import Navbar from "../components/organisems/Navbar";
 
 export default function Register() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      name: form.fullName.value,
+      email: form.email.value,
+      password: form.password.value,
+      gender: form.gender.value,
+      phoneNumber: form.phoneNumber.value,
+    };
+
+    try {
+      const res = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert("Berhasil daftar, silakan login");
+      } else {
+        alert(result.error || "Gagal daftar");
+      }
+    } catch (err) {
+      alert("Gagal koneksi ke server");
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -17,7 +46,7 @@ export default function Register() {
               </p>
             </div>
 
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm md:text-base text-gray-500 mb-2">
