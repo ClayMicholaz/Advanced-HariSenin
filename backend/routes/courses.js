@@ -2,10 +2,36 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// GET semua kursus
+// GET semua kursus dengan filter, search, dan sort
 router.get("/", async (req, res) => {
   try {
-    const [results] = await db.query("SELECT * FROM products");
+    const search = req.query.search || "";
+    const minHarga =
+      req.query.minHarga !== undefined ? parseFloat(req.query.minHarga) : 0;
+    const maxHarga =
+      req.query.maxHarga !== undefined
+        ? parseFloat(req.query.maxHarga)
+        : 1000000000;
+    const sortBy = req.query.sortBy || "id";
+    const sortOrder = req.query.sortOrder || "asc";
+
+    // Validasi kolom sort dan order
+    const allowedSort = ["id", "judul", "harga"];
+    const allowedOrder = ["asc", "desc"];
+    const finalSortBy = allowedSort.includes(sortBy) ? sortBy : "id";
+    const finalSortOrder = allowedOrder.includes(sortOrder.toLowerCase())
+      ? sortOrder.toLowerCase()
+      : "asc";
+
+    // Query dengan filter, search, dan sort
+    const query = `
+      SELECT * FROM products
+      WHERE judul LIKE ? AND harga >= ? AND harga <= ?
+      ORDER BY ${finalSortBy} ${finalSortOrder}
+    `;
+    const values = [`%${search}%`, minHarga, maxHarga];
+
+    const [results] = await db.query(query, values);
 
     const mapped = results.map((course) => ({
       id: course.id,
@@ -18,7 +44,6 @@ router.get("/", async (req, res) => {
 
     res.json(mapped);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Gagal mengambil data kursus" });
   }
 });
@@ -33,7 +58,6 @@ router.get("/:id", async (req, res) => {
 
     res.json(results[0]);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Gagal mengambil kursus" });
   }
 });
@@ -48,7 +72,6 @@ router.post("/", async (req, res) => {
       .status(201)
       .json({ message: "Kursus berhasil dibuat", id: result.insertId });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Gagal menambahkan kursus" });
   }
 });
@@ -68,7 +91,6 @@ router.put("/:id", async (req, res) => {
       affectedRows: result.affectedRows,
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Gagal update kursus" });
   }
 });
@@ -84,7 +106,6 @@ router.delete("/:id", async (req, res) => {
       affectedRows: result.affectedRows,
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Gagal hapus kursus" });
   }
 });
