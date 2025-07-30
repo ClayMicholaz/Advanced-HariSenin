@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Home from "../pages/Home";
 import Admin from "../pages/Admin";
+import VerifikasiEmail from "../pages/VerifikasiEmail";
 
 export const router = createBrowserRouter([
     {
@@ -21,5 +22,8 @@ export const router = createBrowserRouter([
         path: "/admin",
         element: <Admin />,
     },
-
+    {
+        path: "/verifikasi-email",
+        element: <VerifikasiEmail />,
+    }
 ]);

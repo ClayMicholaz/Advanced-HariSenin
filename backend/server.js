@@ -16,6 +16,11 @@ app.use("/auth", authRoutes);
 const usersRoutes = require("./routes/users");
 app.use("/users", usersRoutes);
 
+const uploadRoutes = require("./routes/upload");
+app.use("/upload", uploadRoutes);
+
+app.use("/uploads", express.static("uploads"));
+
 // Run server
 app.listen(3001, () => {
   console.log("🚀 Server running at http://localhost:3001");
